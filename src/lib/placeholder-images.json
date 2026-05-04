@@ -1,0 +1,40 @@
+{
+  "placeholderImages": [
+    {
+      "id": "1",
+      "description": "Minimalist Landscape",
+      "imageUrl": "https://picsum.photos/seed/snap1/1200/800",
+      "imageHint": "landscape nature"
+    },
+    {
+      "id": "2",
+      "description": "Modern Architecture",
+      "imageUrl": "https://picsum.photos/seed/snap2/800/1200",
+      "imageHint": "architecture city"
+    },
+    {
+      "id": "3",
+      "description": "Abstract Art",
+      "imageUrl": "https://picsum.photos/seed/snap3/1000/1000",
+      "imageHint": "abstract art"
+    },
+    {
+      "id": "4",
+      "description": "Serene Ocean",
+      "imageUrl": "https://picsum.photos/seed/snap4/1200/600",
+      "imageHint": "ocean beach"
+    },
+    {
+      "id": "5",
+      "description": "Forest Pathway",
+      "imageUrl": "https://picsum.photos/seed/snap5/800/1200",
+      "imageHint": "forest path"
+    },
+    {
+      "id": "6",
+      "description": "Mountain Peak",
+      "imageUrl": "https://picsum.photos/seed/snap6/1200/900",
+      "imageHint": "mountain snow"
+    }
+  ]
+}

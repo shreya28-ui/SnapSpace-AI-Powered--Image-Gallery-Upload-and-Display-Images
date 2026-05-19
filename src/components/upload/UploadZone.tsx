@@ -94,7 +94,7 @@ export function UploadZone({ onUploadComplete, currentAlbumId }: UploadZoneProps
       const dataUri = await dataUriPromise
 
       // AI Auto-tagging
-      let aiResult = { tags: [], caption: "" }
+      let aiResult: { tags: string[]; caption: string } = { tags: [], caption: "" }
       try {
         aiResult = await aiImageAutoTagging({ imageDataUri: dataUri })
       } catch (err) {

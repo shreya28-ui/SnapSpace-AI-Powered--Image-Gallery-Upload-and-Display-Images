@@ -104,7 +104,10 @@ const ChartTooltip = RechartsPrimitive.Tooltip
 
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
+  Omit<
+    React.ComponentProps<typeof RechartsPrimitive.Tooltip>,
+    "payload" | "label" | "labelFormatter" | "labelClassName" | "formatter" | "color"
+  > &
     React.ComponentProps<"div"> & {
       payload?: any[]
       label?: any

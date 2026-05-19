@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -10,7 +11,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select"
-import { LayoutGrid, List } from "lucide-react"
+import { LayoutGrid, List, Image as ImageIcon, Clock, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface GalleryGridProps {
@@ -18,29 +19,59 @@ interface GalleryGridProps {
   onDelete: (id: string) => void
   onUpdate: (image: GalleryImage) => void
   onImageClick: (image: GalleryImage) => void
+  currentAlbumId?: string
+  hasAnyImages?: boolean
+  searchTerm?: string
 }
 
-export function GalleryGrid({ images, onDelete, onUpdate, onImageClick }: GalleryGridProps) {
+export function GalleryGrid({ 
+  images, 
+  onDelete, 
+  onUpdate, 
+  onImageClick, 
+  currentAlbumId,
+  hasAnyImages,
+  searchTerm
+}: GalleryGridProps) {
   const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid')
   const [sortBy, setSortBy] = React.useState<'newest' | 'oldest' | 'name'>('newest')
 
   const sortedImages = React.useMemo(() => {
     return [...images].sort((a, b) => {
-      if (sortBy === 'newest') return b.createdAt - a.createdAt
-      if (sortBy === 'oldest') return a.createdAt - b.createdAt
-      return a.title.localeCompare(b.title)
+      const timeA = (a.createdAt as any)?.toDate?.()?.getTime() || (typeof a.createdAt === 'number' ? a.createdAt : 0)
+      const timeB = (b.createdAt as any)?.toDate?.()?.getTime() || (typeof b.createdAt === 'number' ? b.createdAt : 0)
+      
+      if (sortBy === 'newest') return timeB - timeA
+      if (sortBy === 'oldest') return timeA - timeB
+      return (a.title || '').localeCompare(b.title || '')
     })
   }, [images, sortBy])
 
-  if (images.length === 0) {
+  if (sortedImages.length === 0) {
+    const isFilterEmpty = hasAnyImages && sortedImages.length === 0;
+    
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed p-20 text-center">
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed p-20 text-center animate-in fade-in duration-500">
         <div className="mb-4 rounded-full bg-secondary p-6">
-          <ImageIcon className="h-10 w-10 text-muted-foreground" />
+          {searchTerm ? (
+            <Search className="h-10 w-10 text-muted-foreground animate-pulse" />
+          ) : currentAlbumId === 'recent' ? (
+            <Clock className="h-10 w-10 text-muted-foreground" />
+          ) : (
+            <ImageIcon className="h-10 w-10 text-muted-foreground" />
+          )}
         </div>
-        <h3 className="text-xl font-bold font-headline">Your gallery is empty</h3>
+        <h3 className="text-xl font-bold font-headline">
+          {searchTerm ? `No results for "${searchTerm}"` : isFilterEmpty ? "No matches found" : "Your gallery is empty"}
+        </h3>
         <p className="mt-2 max-w-xs text-muted-foreground">
-          Start by uploading some images or dragging them into the upload zone above.
+          {searchTerm 
+            ? "Try different keywords or check your spelling. We searched titles, captions, tags, and albums."
+            : currentAlbumId === 'recent' && isFilterEmpty
+            ? "You haven't uploaded any photos in the last 7 days. Try uploading something new!"
+            : isFilterEmpty 
+            ? "No images match your current filters."
+            : "Start by uploading some images or dragging them into the upload zone above."}
         </p>
       </div>
     )
@@ -49,7 +80,18 @@ export function GalleryGrid({ images, onDelete, onUpdate, onImageClick }: Galler
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-2xl font-bold tracking-tight font-headline">Gallery</h2>
+        <h2 className="text-2xl font-bold tracking-tight font-headline">
+          {searchTerm ? (
+            <span className="flex items-center gap-2">
+              <Search className="h-5 w-5 text-accent" />
+              Search Results
+            </span>
+          ) : currentAlbumId === 'recent' ? (
+            'Recent Photos'
+          ) : (
+            'Gallery'
+          )}
+        </h2>
         <div className="flex items-center gap-3">
           <div className="flex items-center rounded-lg border bg-card p-1 shadow-sm">
             <Button 
@@ -57,6 +99,7 @@ export function GalleryGrid({ images, onDelete, onUpdate, onImageClick }: Galler
               size="icon" 
               className="h-8 w-8"
               onClick={() => setViewMode('grid')}
+              suppressHydrationWarning
             >
               <LayoutGrid className="h-4 w-4" />
             </Button>
@@ -65,12 +108,13 @@ export function GalleryGrid({ images, onDelete, onUpdate, onImageClick }: Galler
               size="icon" 
               className="h-8 w-8"
               onClick={() => setViewMode('list')}
+              suppressHydrationWarning
             >
               <List className="h-4 w-4" />
             </Button>
           </div>
           <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
-            <SelectTrigger className="w-[160px] bg-card shadow-sm">
+            <SelectTrigger className="w-[160px] bg-card shadow-sm" suppressHydrationWarning>
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -100,24 +144,5 @@ export function GalleryGrid({ images, onDelete, onUpdate, onImageClick }: Galler
         ))}
       </div>
     </div>
-  )
-}
-
-function ImageIcon({ className }: { className?: string }) {
-  return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      className={className}
-    >
-      <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-      <circle cx="9" cy="9" r="2" />
-      <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-    </svg>
   )
 }

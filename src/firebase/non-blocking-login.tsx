@@ -1,29 +1,46 @@
 'use client';
 import {
-  Auth, // Import Auth type for type hinting
+  Auth,
   signInAnonymously,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  // Assume getAuth and app are initialized elsewhere
+  signOut,
+  UserCredential,
 } from 'firebase/auth';
+import { Firestore, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 /** Initiate anonymous sign-in (non-blocking). */
-export function initiateAnonymousSignIn(authInstance: Auth): void {
-  // CRITICAL: Call signInAnonymously directly. Do NOT use 'await signInAnonymously(...)'.
-  signInAnonymously(authInstance);
-  // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
+export function initiateAnonymousSignIn(authInstance: Auth): Promise<UserCredential> {
+  return signInAnonymously(authInstance);
 }
 
-/** Initiate email/password sign-up (non-blocking). */
-export function initiateEmailSignUp(authInstance: Auth, email: string, password: string): void {
-  // CRITICAL: Call createUserWithEmailAndPassword directly. Do NOT use 'await createUserWithEmailAndPassword(...)'.
-  createUserWithEmailAndPassword(authInstance, email, password);
-  // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
+/** 
+ * Initiate email/password sign-up.
+ * Creates the user in Firebase Auth and seeds their profile in Firestore.
+ */
+export async function initiateEmailSignUp(authInstance: Auth, db: Firestore, email: string, password: string): Promise<UserCredential> {
+  const userCredential = await createUserWithEmailAndPassword(authInstance, email, password);
+  const user = userCredential.user;
+  const userRef = doc(db, 'users', user.uid);
+  
+  // Seed the user profile document in Firestore and AWAIT it to ensure login works immediately after
+  await setDoc(userRef, {
+    id: user.uid,
+    email: user.email,
+    displayName: email.split('@')[0],
+    themePreference: 'light',
+    createdAt: serverTimestamp(),
+  });
+  
+  return userCredential;
 }
 
-/** Initiate email/password sign-in (non-blocking). */
-export function initiateEmailSignIn(authInstance: Auth, email: string, password: string): void {
-  // CRITICAL: Call signInWithEmailAndPassword directly. Do NOT use 'await signInWithEmailAndPassword(...)'.
-  signInWithEmailAndPassword(authInstance, email, password);
-  // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
+/** Initiate email/password sign-in. */
+export function initiateEmailSignIn(authInstance: Auth, email: string, password: string): Promise<UserCredential> {
+  return signInWithEmailAndPassword(authInstance, email, password);
+}
+
+/** Initiate sign-out. */
+export function initiateSignOut(authInstance: Auth): Promise<void> {
+  return signOut(authInstance);
 }

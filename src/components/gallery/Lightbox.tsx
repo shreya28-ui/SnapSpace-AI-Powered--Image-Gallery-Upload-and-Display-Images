@@ -2,14 +2,17 @@
 
 import * as React from "react"
 import { GalleryImage } from "@/lib/types"
-import { X, ChevronLeft, ChevronRight, Info, Calendar, FileText, Tag, Trash2, Download } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, Info, Calendar, FileText, Tag, Trash2, Download, Image as ImageIcon } from "lucide-react"
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { doc } from "firebase/firestore"
+import { updateDocumentNonBlocking } from "@/firebase"
+import { useFirestore, useUser } from "@/firebase"
+import { useToast } from "@/hooks/use-toast"
 
 interface LightboxProps {
   image: GalleryImage | null
@@ -24,11 +27,25 @@ export function Lightbox({ image, onClose, onNext, onPrev, onDelete, onUpdate }:
   const [showDetails, setShowDetails] = React.useState(true)
   const [isEditing, setIsEditing] = React.useState(false)
   const [editedImage, setEditedImage] = React.useState<GalleryImage | null>(null)
+  const db = useFirestore()
+  const { user } = useUser()
+  const { toast } = useToast()
 
   React.useEffect(() => {
-    setEditedImage(image)
-    setIsEditing(false)
+    if (image) {
+      setEditedImage(image)
+      setIsEditing(false)
+    }
   }, [image])
+
+  const dateValue = React.useMemo(() => {
+    if (!image || !image.createdAt) return new Date();
+    if (typeof image.createdAt.toDate === 'function') {
+      return image.createdAt.toDate();
+    }
+    const parsed = new Date(image.createdAt);
+    return isNaN(parsed.getTime()) ? new Date() : parsed;
+  }, [image?.createdAt])
 
   if (!image) return null
 
@@ -51,10 +68,8 @@ export function Lightbox({ image, onClose, onNext, onPrev, onDelete, onUpdate }:
   return (
     <Dialog open={!!image} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-[95vw] h-[90vh] p-0 overflow-hidden border-none bg-black/95 gap-0 flex flex-col md:flex-row shadow-2xl">
-        <DialogTitle className="sr-only">Image Detail View</DialogTitle>
-        <DialogDescription className="sr-only">
-          View details and edit metadata for {image.title}
-        </DialogDescription>
+        <DialogTitle className="sr-only">Image Detail - {image.title}</DialogTitle>
+        <DialogDescription className="sr-only">View and edit image metadata.</DialogDescription>
 
         <div className="relative flex-1 flex items-center justify-center bg-black overflow-hidden group">
           <img 
@@ -69,7 +84,7 @@ export function Lightbox({ image, onClose, onNext, onPrev, onDelete, onUpdate }:
             </Button>
           </div>
 
-          <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute top-4 right-4 flex gap-2">
             <Button variant="ghost" size="icon" className="rounded-full bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm" onClick={handleDownload}>
               <Download className="h-5 w-5" />
             </Button>
@@ -79,19 +94,13 @@ export function Lightbox({ image, onClose, onNext, onPrev, onDelete, onUpdate }:
           </div>
 
           {onPrev && (
-            <button 
-              className="absolute left-4 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/50 opacity-0 group-hover:opacity-100 transition-all"
-              onClick={(e) => { e.stopPropagation(); onPrev(); }}
-            >
+            <button className="absolute left-4 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/50" onClick={onPrev}>
               <ChevronLeft className="h-8 w-8" />
             </button>
           )}
           
           {onNext && (
-            <button 
-              className="absolute right-4 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/50 opacity-0 group-hover:opacity-100 transition-all"
-              onClick={(e) => { e.stopPropagation(); onNext(); }}
-            >
+            <button className="absolute right-4 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/50" onClick={onNext}>
               <ChevronRight className="h-8 w-8" />
             </button>
           )}
@@ -129,31 +138,6 @@ export function Lightbox({ image, onClose, onNext, onPrev, onDelete, onUpdate }:
 
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-                  <Info className="h-3 w-3" /> Caption
-                </label>
-                {isEditing ? (
-                  <Textarea 
-                    value={editedImage?.caption} 
-                    onChange={(e) => setEditedImage(prev => prev ? {...prev, caption: e.target.value} : null)}
-                    className="text-sm min-h-[100px]"
-                    placeholder="Describe this image..."
-                  />
-                ) : (
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {image.caption || "No caption provided."}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-                  <Calendar className="h-3 w-3" /> Uploaded
-                </label>
-                <p className="text-sm">{format(image.createdAt, 'PPp')}</p>
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
                   <Tag className="h-3 w-3" /> Tags
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -170,24 +154,24 @@ export function Lightbox({ image, onClose, onNext, onPrev, onDelete, onUpdate }:
 
               <div className="pt-2 flex flex-col gap-2">
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">File Size</span>
-                  <span>{(image.size / 1024 / 1024).toFixed(2)} MB</span>
+                  <span className="text-muted-foreground">Uploaded</span>
+                  <span>{format(dateValue, 'MMM d, yyyy')}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">File Format</span>
-                  <span className="uppercase">{image.type.split('/')[1]}</span>
+                  <span className="text-muted-foreground">Storage</span>
+                  <span>{(image.size / 1024 / 1024).toFixed(2)} MB</span>
                 </div>
               </div>
 
               {onDelete && (
-                <div className="pt-6 mt-auto">
+                <div className="pt-6">
                   <Button 
                     variant="ghost" 
-                    className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+                    className="w-full text-destructive hover:bg-destructive/10"
                     onClick={() => { onDelete(); onClose(); }}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Delete permanently
+                    Delete Image
                   </Button>
                 </div>
               )}

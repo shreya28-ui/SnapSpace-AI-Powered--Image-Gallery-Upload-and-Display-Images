@@ -72,9 +72,17 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-body select-none md:select-auto;
+    -webkit-tap-highlight-color: transparent;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-sans;
+    @apply font-headline;
   }
+  input, textarea {
+    @apply text-base md:text-sm; /* Prevents auto-zoom on iOS */
+  }
+}
+
+.pwa-install-prompt {
+  @apply fixed bottom-4 left-4 right-4 z-50 rounded-xl bg-primary p-4 text-primary-foreground shadow-2xl md:hidden;
 }

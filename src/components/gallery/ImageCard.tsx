@@ -1,8 +1,9 @@
+
 "use client"
 
 import * as React from "react"
 import { GalleryImage } from "@/lib/types"
-import { MoreHorizontal, Trash2, Download, ExternalLink, Info } from "lucide-react"
+import { MoreHorizontal, Trash2, Download, ExternalLink } from "lucide-react"
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -13,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { formatDistanceToNow } from "date-fns"
+import { cn } from "@/lib/utils"
 
 interface ImageCardProps {
   image: GalleryImage
@@ -32,6 +34,11 @@ export function ImageCard({ image, onDelete, onUpdate, onClick, viewMode }: Imag
     link.click()
     document.body.removeChild(link)
   }
+
+  const dateValue = React.useMemo(() => {
+    if (!image.createdAt) return new Date()
+    return (image.createdAt as any)?.toDate?.() || new Date(image.createdAt)
+  }, [image.createdAt])
 
   if (viewMode === 'list') {
     return (
@@ -53,13 +60,13 @@ export function ImageCard({ image, onDelete, onUpdate, onClick, viewMode }: Imag
           {image.tags.length > 2 && <span className="text-[10px] text-muted-foreground">+{image.tags.length - 2}</span>}
         </div>
         <div className="text-xs text-muted-foreground whitespace-nowrap hidden sm:block">
-          {formatDistanceToNow(image.createdAt)} ago
+          {formatDistanceToNow(dateValue)} ago
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDownload}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={handleDownload} suppressHydrationWarning>
             <Download className="h-4 w-4" />
           </Button>
-          <ImageActionsMenu onDelete={onDelete} onDownload={handleDownload} />
+          <ImageActionsMenu onDelete={onDelete} onDownload={handleDownload} variant="ghost" />
         </div>
       </div>
     )
@@ -77,11 +84,11 @@ export function ImageCard({ image, onDelete, onUpdate, onClick, viewMode }: Imag
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" 
           loading="lazy"
         />
-        <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3 opacity-0 transition-opacity group-hover:opacity-100 bg-gradient-to-b from-black/40 to-transparent">
+        <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3 opacity-100 md:opacity-0 transition-opacity group-hover:opacity-100 bg-gradient-to-b from-black/40 to-transparent">
           <Badge variant="secondary" className="bg-white/90 text-primary border-none shadow-sm backdrop-blur-sm">
             {(image.size / 1024 / 1024).toFixed(1)} MB
           </Badge>
-          <ImageActionsMenu onDelete={onDelete} onDownload={handleDownload} />
+          <ImageActionsMenu onDelete={onDelete} onDownload={handleDownload} variant="overlay" />
         </div>
       </div>
       
@@ -108,15 +115,29 @@ export function ImageCard({ image, onDelete, onUpdate, onClick, viewMode }: Imag
   )
 }
 
-function ImageActionsMenu({ onDelete, onDownload }: { onDelete: () => void, onDownload: (e: React.MouseEvent) => void }) {
+function ImageActionsMenu({ 
+  onDelete, 
+  onDownload, 
+  variant = "overlay" 
+}: { 
+  onDelete: () => void, 
+  onDownload: (e: React.MouseEvent) => void,
+  variant?: "overlay" | "ghost"
+}) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button 
           variant="ghost" 
           size="icon" 
-          className="h-8 w-8 rounded-full bg-black/20 text-white hover:bg-black/40 hover:text-white backdrop-blur-sm border-none md:opacity-0 group-hover:opacity-100 transition-opacity"
+          className={cn(
+            "h-8 w-8 rounded-full transition-opacity",
+            variant === "overlay" 
+              ? "bg-black/20 text-white hover:bg-black/40 hover:text-white backdrop-blur-sm border-none" 
+              : "text-muted-foreground hover:text-foreground"
+          )}
           onClick={(e) => e.stopPropagation()}
+          suppressHydrationWarning
         >
           <MoreHorizontal className="h-4 w-4" />
         </Button>

@@ -35,6 +35,126 @@
       "description": "Mountain Peak",
       "imageUrl": "https://picsum.photos/seed/snap6/1200/900",
       "imageHint": "mountain snow"
+    },
+    {
+      "id": "7",
+      "description": "Wonderla Bangalore - Recoil Roller Coaster",
+      "imageUrl": "https://picsum.photos/seed/wonder1/1200/800",
+      "imageHint": "roller coaster"
+    },
+    {
+      "id": "8",
+      "description": "Wonderla Bangalore - Sky Wheel View",
+      "imageUrl": "https://picsum.photos/seed/wonder2/800/1200",
+      "imageHint": "ferris wheel"
+    },
+    {
+      "id": "9",
+      "description": "Wonderla Bangalore - Water Pendulum",
+      "imageUrl": "https://picsum.photos/seed/wonder3/1200/800",
+      "imageHint": "water park"
+    },
+    {
+      "id": "10",
+      "description": "Wonderla Bangalore - Musical Fountain",
+      "imageUrl": "https://picsum.photos/seed/wonder4/1000/1000",
+      "imageHint": "amusement park"
+    },
+    {
+      "id": "11",
+      "description": "Wonderla Bangalore - Main Entrance",
+      "imageUrl": "https://picsum.photos/seed/wonder5/1200/800",
+      "imageHint": "amusement entrance"
+    },
+    {
+      "id": "12",
+      "description": "Wonderla Bangalore - Jungle Lagoon",
+      "imageUrl": "https://picsum.photos/seed/wonder6/1200/800",
+      "imageHint": "wave pool"
+    },
+    {
+      "id": "13",
+      "description": "Wonderla Bangalore - Flash Tower Drop",
+      "imageUrl": "https://picsum.photos/seed/wonder7/800/1200",
+      "imageHint": "freefall ride"
+    },
+    {
+      "id": "14",
+      "description": "Wonderla Bangalore - Night Carnival Lights",
+      "imageUrl": "https://picsum.photos/seed/wonder8/1200/800",
+      "imageHint": "night carnival"
+    },
+    {
+      "id": "15",
+      "description": "Cinema Star - Elegant Portrait",
+      "imageUrl": "https://picsum.photos/seed/actress1/800/1000",
+      "imageHint": "actress portrait"
+    },
+    {
+      "id": "16",
+      "description": "Hollywood Glamour - Red Carpet",
+      "imageUrl": "https://picsum.photos/seed/actress2/800/1000",
+      "imageHint": "actress fashion"
+    },
+    {
+      "id": "17",
+      "description": "Action Heroine - Behind the Scenes",
+      "imageUrl": "https://picsum.photos/seed/actress3/800/1000",
+      "imageHint": "actress studio"
+    },
+    {
+      "id": "18",
+      "description": "Indie Film Icon - Candid Shot",
+      "imageUrl": "https://picsum.photos/seed/actress4/800/1000",
+      "imageHint": "actress candid"
+    },
+    {
+      "id": "19",
+      "description": "Vogue Cover Feature",
+      "imageUrl": "https://picsum.photos/seed/actress5/800/1000",
+      "imageHint": "model fashion"
+    },
+    {
+      "id": "20",
+      "description": "Classic Cinema Diva",
+      "imageUrl": "https://picsum.photos/seed/actress6/800/1000",
+      "imageHint": "vintage actress"
+    },
+    {
+      "id": "21",
+      "description": "Marina Bay Sands - Iconic Skyline",
+      "imageUrl": "https://picsum.photos/seed/sg1/1200/800",
+      "imageHint": "singapore skyline"
+    },
+    {
+      "id": "22",
+      "description": "Gardens by the Bay - Supertree Grove",
+      "imageUrl": "https://picsum.photos/seed/sg2/800/1200",
+      "imageHint": "singapore garden"
+    },
+    {
+      "id": "23",
+      "description": "Merlion Park - National Icon",
+      "imageUrl": "https://picsum.photos/seed/sg3/1200/800",
+      "imageHint": "merlion singapore"
+    },
+    {
+      "id": "24",
+      "description": "Jewel Changi - Rain Vortex Waterfall",
+      "imageUrl": "https://picsum.photos/seed/sg4/1000/1000",
+      "imageHint": "airport waterfall"
+    },
+    {
+      "id": "25",
+      "description": "Sentosa Island - Siloso Beach",
+      "imageUrl": "https://picsum.photos/seed/sg5/1200/800",
+      "imageHint": "singapore beach"
+    },
+    {
+      "id": "26",
+      "description": "Clarke Quay - Riverside Dining",
+      "imageUrl": "https://picsum.photos/seed/sg6/1200/800",
+      "imageHint": "singapore night"
     }
   ]
 }

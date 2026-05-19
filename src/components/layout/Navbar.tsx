@@ -1,94 +1,106 @@
 "use client"
 
 import * as React from "react"
-import { Search, Image as ImageIcon, Mic } from "lucide-react"
+import { Search, X, Image as ImageIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { cn } from "@/lib/utils"
 
 interface NavbarProps {
   onSearch: (term: string) => void
 }
 
 export function Navbar({ onSearch }: NavbarProps) {
-  const [isListening, setIsListening] = React.useState(false);
-  const [searchValue, setSearchValue] = React.useState("");
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = React.useState(false)
+  const [localSearchTerm, setLocalSearchTerm] = React.useState("")
 
-  const handleSearchChange = (val: string) => {
-    setSearchValue(val);
-    onSearch(val);
-  };
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const term = e.target.value
+    setLocalSearchTerm(term)
+    onSearch(term)
+  }
 
-  const startVoiceSearch = () => {
-    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    
-    if (!SpeechRecognitionAPI) {
-      alert("Your browser does not support Voice Search.");
-      return;
-    }
+  const triggerSearch = () => {
+    onSearch(localSearchTerm)
+  }
 
-    const recognition = new SpeechRecognitionAPI();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
-
-    recognition.onstart = () => {
-      setIsListening(true);
-    };
-
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      handleSearchChange(transcript);
-      setIsListening(false);
-    };
-
-    recognition.onerror = (event: any) => {
-      console.error("Speech recognition error", event.error);
-      setIsListening(false);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognition.start();
-  };
+  const clearSearch = () => {
+    setLocalSearchTerm("")
+    onSearch("")
+  }
 
   return (
     <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md md:px-6">
-      <div className="flex items-center gap-4">
+      <div className={cn("flex items-center gap-4 transition-all", isMobileSearchOpen && "hidden sm:flex")}>
         <SidebarTrigger className="md:hidden" />
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
             <ImageIcon className="h-5 w-5" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-primary font-headline">SnapSpace</span>
+          <span className="text-xl font-bold tracking-tight text-primary font-headline hidden min-[400px]:block">SnapSpace</span>
         </div>
       </div>
 
-      <div className="mx-4 flex-1 max-w-md hidden sm:block">
-        <div className="relative group flex items-center">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent transition-colors" />
-          <Input
-            value={searchValue}
-            placeholder="Search by caption or filename..."
-            className="pl-9 pr-10 bg-secondary/50 border-transparent focus-visible:ring-accent transition-all duration-200"
-            onChange={(e) => handleSearchChange(e.target.value)}
-          />
-          <button
-            type="button"
-            onClick={startVoiceSearch}
-            className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-colors ${
-              isListening ? "bg-red-500 text-white animate-pulse" : "text-muted-foreground hover:text-accent hover:bg-secondary"
-            }`}
-            title="Voice Search"
+      <div className={cn(
+        "flex-1 max-w-md transition-all duration-300 ease-in-out",
+        isMobileSearchOpen ? "flex mx-0" : "hidden sm:flex mx-4"
+      )}>
+        <div className="relative flex w-full items-center gap-2">
+          <div className="relative flex-1 group">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent transition-colors" />
+            <Input
+              placeholder="Search photos..."
+              value={localSearchTerm}
+              className="pl-9 pr-10 bg-secondary/50 border-transparent focus-visible:ring-accent transition-all duration-200 h-10"
+              onChange={handleSearchChange}
+              onKeyDown={(e) => e.key === 'Enter' && triggerSearch()}
+              autoFocus={isMobileSearchOpen}
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              {localSearchTerm && (
+                <button 
+                  onClick={clearSearch}
+                  className="text-muted-foreground hover:text-foreground p-1.5 rounded-full hover:bg-muted transition-colors"
+                  type="button"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+          <Button 
+            size="sm" 
+            className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-sm px-4 h-10 hidden md:flex"
+            onClick={triggerSearch}
           >
-            <Mic className="h-4 w-4" />
-          </button>
+            Search
+          </Button>
+          {isMobileSearchOpen && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setIsMobileSearchOpen(false)} 
+              className="sm:hidden h-10 w-10 shrink-0" 
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          )}
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className={cn("flex items-center gap-2 transition-all", isMobileSearchOpen && "hidden sm:flex")}>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="sm:hidden rounded-full hover:bg-secondary" 
+          onClick={() => setIsMobileSearchOpen(true)}
+          aria-label="Toggle search"
+        >
+          <Search className="h-5 w-5" />
+        </Button>
         <ThemeToggle />
       </div>
     </header>

@@ -5,7 +5,7 @@ export interface GalleryImage {
   caption?: string;
   tags: string[];
   albumId?: string;
-  createdAt: number;
+  createdAt: any;
   size: number;
   type: string;
   width?: number;
@@ -15,5 +15,7 @@ export interface GalleryImage {
 export interface Album {
   id: string;
   name: string;
-  createdAt: number;
+  createdAt: any;
+  userId: string;
+  coverImageUrl?: string;
 }

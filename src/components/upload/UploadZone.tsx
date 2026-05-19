@@ -94,7 +94,7 @@ export function UploadZone({ onUploadComplete, currentAlbumId }: UploadZoneProps
       const dataUri = await dataUriPromise
 
       // AI Auto-tagging
-      let aiResult: { tags: string[], caption: string } = { tags: [], caption: "" }
+      let aiResult = { tags: [], caption: "" }
       try {
         aiResult = await aiImageAutoTagging({ imageDataUri: dataUri })
       } catch (err) {
@@ -102,13 +102,16 @@ export function UploadZone({ onUploadComplete, currentAlbumId }: UploadZoneProps
         aiFailureCount++
       }
 
+      // Determine albumId - Firestore doesn't support 'undefined'. Use 'null' instead.
+      const albumIdToSave = (currentAlbumId === 'all' || currentAlbumId === 'recent') ? null : (currentAlbumId || null)
+
       const newImage: GalleryImage = {
         id: Math.random().toString(36).substring(7),
         url: dataUri,
         title: preview.file.name.split('.')[0],
         caption: aiResult.caption || "",
         tags: aiResult.tags || [],
-        albumId: currentAlbumId === 'all' ? undefined : currentAlbumId,
+        albumId: albumIdToSave as string, // Cast for type safety but it's null-safe for Firestore
         createdAt: Date.now(),
         size: preview.file.size,
         type: preview.file.type
